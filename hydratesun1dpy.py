@@ -25,16 +25,16 @@ write_span_size = len(writespan)
 # === MESH ===
 
 x_mesh_size = 51
-x_step = cons.total_length / (x_mesh_size - 1)
-x_mesh = np.arange(0, cons.total_length, x_step)
+x_step = cons.TOTAL_LENGTH / (x_mesh_size - 1)
+x_mesh = np.arange(0, cons.TOTAL_LENGTH, x_step)
 
 # === INITIALIZE ===
 
-density_gas = np.zeros(write_span_size,x_mesh_size)
-temperature = np.zeros(write_span_size,x_mesh_size)
-pressure = np.zeros(write_span_size,x_mesh_size)
-saturation_hydrate = np.zeros(write_span_size,x_mesh_size)
-saturation_water = np.zeros(write_span_size,x_mesh_size)
+density_gas = np.zeros((write_span_size,x_mesh_size))
+temperature = np.zeros((write_span_size,x_mesh_size))
+pressure = np.zeros((write_span_size,x_mesh_size))
+saturation_hydrate = np.zeros((write_span_size,x_mesh_size))
+saturation_water = np.zeros((write_span_size,x_mesh_size))
 
 density_gas_previous = np.zeros(x_mesh_size)
 temperature_previous = np.zeros(x_mesh_size)
@@ -63,11 +63,11 @@ phase_perm_gas = np.zeros(x_mesh_size)
 phase_perm_water = np.zeros(x_mesh_size)
 porosity_effective = np.zeros(x_mesh_size)
 
-density_gas(1,:) = cons.DENSITY_GAS_INITIAL
-temperature(1,:) = cons.TEMPERATURE_INITIAL
-pressure(1,:) = cons.PRESSURE_INITIAL
-saturation_hydrate(1,:) = cons.SATURATION_HYDRATE_INITIAL
-saturation_water(1,:) = cons.SATURATION_WATER_INITIAL
+density_gas[0,:] = cons.DENSITY_GAS_INITIAL
+temperature[0,:] = cons.TEMPERATURE_INITIAL
+pressure[0,:] = cons.PRESSURE_INITIAL
+saturation_hydrate[0,:] = cons.SATURATION_HYDRATE_INITIAL
+saturation_water[0,:] = cons.SATURATION_WATER_INITIAL
 
 print(time_step[20030])
 print(timespan[20030])
@@ -77,3 +77,4 @@ print(write_span_size)
 print(time_span_size)
 print(x_mesh[48])
 print(x_mesh[49])
+print(pressure[0,23])
