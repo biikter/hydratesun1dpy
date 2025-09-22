@@ -64,10 +64,10 @@ phase_perm_water = np.zeros(x_mesh_size)
 porosity_effective = np.zeros(x_mesh_size)
 
 density_gas(1,:) = cons.DENSITY_GAS_INITIAL
-temperature(1,:) = TemperatureInitial;
-Pressure(1,:) = PressureInitial;
-SaturationHydrate(1,:) = SaturationHydrateInitial;
-SaturationWater(1,:) = SaturationWaterInitial;
+temperature(1,:) = cons.TEMPERATURE_INITIAL;
+pressure(1,:) = cons.PRESSURE_INITIAL;
+saturation_hydrate(1,:) = cons.SATURATION_HYDRATE_INITIAL;
+saturation_water(1,:) = cons.SATURATION_WATER_INITIAL;
 
 print(time_step[20030])
 print(timespan[20030])
