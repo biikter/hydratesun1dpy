@@ -69,6 +69,17 @@ pressure[0,:] = cons.PRESSURE_INITIAL
 saturation_hydrate[0,:] = cons.SATURATION_HYDRATE_INITIAL
 saturation_water[0,:] = cons.SATURATION_WATER_INITIAL
 
+density_gas_previous[:] = cons.DENSITY_GAS_INITIAL
+temperature_previous[:] = cons.TEMPERATURE_INITIAL
+saturation_hydrate_previous[:] = cons.SATURATION_HYDRATE_INITIAL
+saturation_water_previous[:] = cons.SATURATION_WATER_INITIAL
+
+phase_perm_gas[:] = (((1 - cons.SATURATION_WATER_INITIAL - cons.SATURATION_HYDRATE_INITIAL) / (1 - cons.SATURATION_HYDRATE_INITIAL) - cons.SATURATION_GAS_RESIDUAL)
+        / (1 - cons.SATURATION_GAS_RESIDUAL - cons.SATURATION_WATER_RESIDUAL)) ** 2
+phase_perm_water[:] = ((cons.SATURATION_WATER_INITIAL / (1 - cons.SATURATION_HYDRATE_INITIAL) - cons.SATURATION_WATER_RESIDUAL)
+        / (1 - cons.SATURATION_WATER_RESIDUAL - cons.SATURATION_GAS_RESIDUAL)) ** 4
+porosity_effective[:] = (1 - cons.SATURATION_HYDRATE_INITIAL) * cons.POROSITY
+
 print(time_step[20030])
 print(timespan[20030])
 print(timespan[20066])
@@ -78,3 +89,5 @@ print(time_span_size)
 print(x_mesh[48])
 print(x_mesh[49])
 print(pressure[0,23])
+print(porosity_effective[16])
+print(phase_perm_gas[38])
