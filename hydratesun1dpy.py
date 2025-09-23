@@ -80,14 +80,45 @@ phase_perm_water[:] = ((cons.SATURATION_WATER_INITIAL / (1 - cons.SATURATION_HYD
         / (1 - cons.SATURATION_WATER_RESIDUAL - cons.SATURATION_GAS_RESIDUAL)) ** 4
 porosity_effective[:] = (1 - cons.SATURATION_HYDRATE_INITIAL) * cons.POROSITY
 
-print(time_step[20030])
-print(timespan[20030])
-print(timespan[20066])
-print(writespan[100])
-print(write_span_size)
-print(time_span_size)
-print(x_mesh[48])
-print(x_mesh[49])
-print(pressure[0,23])
-print(porosity_effective[16])
-print(phase_perm_gas[38])
+# === TIME CYCLE ===
+
+write_counter = 2
+current_time = 0.0
+
+for time_counter in range(1,time_span_size):
+
+    local_timespan = np.array([timespan[time_counter - 1], 0.5*(timespan[time_counter - 1] + timespan[time_counter]), timespan[time_counter]])
+    
+        # SunX - viscosity by formula, Orto Buluu - viscosity fixed
+    viscosity_gas = 2.4504e-3 + 2.8764e-5 * temperature_previous + 3.279e-9 * temperature_previous * temperature_previous \
+        - 3.7838e-12 * temperature_previous * temperature_previous * temperature_previous + 2.0891e-5 * density_gas_previous \
+        + 2.5127e-7 * density_gas_previous * density_gas_previous - 5.822e-10 * density_gas_previous * density_gas_previous * density_gas_previous \
+        + 1.8378e-13 * density_gas_previous * density_gas_previous * density_gas_previous * density_gas_previous
+    
+    viscosity_gas = 0.001 * viscosity_gas
+
+    # === MAIN EQUATIONS ===
+
+    density_gas_previous = density_gas_previous + 1
+    temperature_previous = temperature_previous + 1
+    pressure_previous = density_gas_previous * cons.GAS_CONSTANT_R * temperature_previous
+
+    pressure_equilibrium = 1.15 * np.exp(cons.A_W + cons.B_W / temperature_previous)
+
+    porosity_effective = (1 - saturation_hydrate_previous) * cons.POROSITY
+
+        # Masuda et al., 1999 - N = 10
+    abs_perm_with_hydrate = cons.PERMEABILITY * (1 - saturation_hydrate_previous) ** 15
+    
+    phase_perm_gas = (((1 - saturation_water_previous - saturation_hydrate_previous) / (1 - saturation_hydrate_previous) - cons.SATURATION_GAS_RESIDUAL) \
+        / (1 - cons.SATURATION_GAS_RESIDUAL - cons.SATURATION_WATER_RESIDUAL)) ** 2
+    
+    phase_perm_water = ((saturation_water_previous / (1 - saturation_hydrate_previous) - cons.SATURATION_WATER_RESIDUAL) \
+        / (1 - cons.SATURATION_WATER_RESIDUAL - cons.SATURATION_WATER_RESIDUAL)) ** 4
+    
+    coefficients = np.polyfit(x_mesh, pressure_previous, 3)
+    polynomial_function = np.poly1d(coefficients)
+    derivative = polynomial_function.deriv()
+    result_at_x2 = derivative(0.1)
+
+    dP_dt = (pressure_previous - pressure_previous_previous) / time_step[timecounter - 1]
