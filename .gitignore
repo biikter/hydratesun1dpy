@@ -40,3 +40,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
