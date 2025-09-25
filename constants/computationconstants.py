@@ -1,0 +1,3 @@
+MAX_TIME = 110000.0 # sec
+WRITE_STEP = 10.0 # sec
+X_MESH_SIZE = 51
