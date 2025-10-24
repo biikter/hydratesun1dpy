@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import fenics as fe
 
 import constants.constantssunx as cons
 import constants.computationconstants as comp
@@ -16,6 +17,28 @@ gv.porosity_effective[:], \
 gv.abs_perm_with_hydrate[:], \
 gv.phase_perm_gas[:], \
 gv.phase_perm_water[:] = pf.calc_multiphase_flow_params(cons.TEMPERATURE_INITIAL, cons.SATURATION_WATER_INITIAL, cons.SATURATION_HYDRATE_INITIAL)
+
+# Mesh and function spaces
+mesh = fe.IntervalMesh(comp.X_MESH_SIZE-1, 0, cons.TOTAL_LENGTH)
+P1 = fe.FiniteElement('P', fe.interval, 1)
+element = fe.MixedElement([P1, P1])
+V = fe.FunctionSpace(mesh, element)
+v_1, v_2 = fe.TestFunctions(V)
+u = fe.Function(V)
+rho, T = fe.split(u)
+
+# Boundary conditions
+tol = 1E-14
+def boundary_left(x, on_boundary):
+    return on_boundary and (fe.near(x[0], 0, tol) or fe.near(x[0], 1, tol))
+bc_rho = fe.DirichletBC(V.sub(0), fe.Constant(cons.DENSITY_GAS_INITIAL), boundary_left)
+bc_T = fe.DirichletBC(V.sub(1), fe.Constant(cons.TEMPERATURE_INITIAL), boundary_left)
+
+# Initial conditions
+u_0 = fe.Expression(('rho_i', 'T_i'), degree=1, rho_i=cons.DENSITY_GAS_INITIAL, T_i=cons.TEMPERATURE_INITIAL)
+u_n = fe.project(u_0, V)
+
+# Variational problem
 
 # === TIME CYCLE ===
 
@@ -44,9 +67,9 @@ for time_counter in range(1,tx.time_span_size):
     gv.phase_perm_water = pf.calc_multiphase_flow_params(gv.temperature, gv.saturation_water, gv.saturation_hydrate)
 
     gv.velocity_water, \
-    gv.dV_dx = pf.darcylaw_phase(tx.x_mesh, gv.pressure, gv.abs_perm_with_hydrate, gv.phase_perm_water)
+    gv.dv_dx = pf.darcylaw_phase(tx.x_mesh, gv.pressure, gv.abs_perm_with_hydrate, gv.phase_perm_water)
 
-    gv.dP_dt = (gv.pressure - gv.pressure_previous) / tx.time_step[time_counter - 1]
+    gv.dp_dt = (gv.pressure - gv.pressure_previous) / tx.time_step[time_counter - 1]
     gv.pressure_previous = gv.pressure
 
     # Orto Buluu
@@ -62,7 +85,7 @@ for time_counter in range(1,tx.time_span_size):
     gv.mass_rate_water = hd.mass_rates_fun(gv.temperature, gv.interface_area, gv.pressure_equilibrium, gv.pressure, gv.saturation_hydrate)
 
     gv.saturation_hydrate, \
-    gv.saturation_water = hd.calc_saturation_change(gv.saturation_hydrate, gv.saturation_water, gv.mass_rate_hydrate,gv.mass_rate_water , gv.dV_dx, tx.time_step[time_counter - 1])
+    gv.saturation_water = hd.calc_saturation_change(gv.saturation_hydrate, gv.saturation_water, gv.mass_rate_hydrate,gv.mass_rate_water , gv.dv_dx, tx.time_step[time_counter - 1])
 
     # === WRITE NEW LAYER ===
 
